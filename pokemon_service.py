@@ -32,9 +32,13 @@ def _add_pokemon_lookup_data(pokemons):
     _add_basic_attack_data(pokemon)
     _add_charged_attack_data(pokemon)
     _add_battle_ranks_data(pokemon)
+    _add_calculated_iv_pct(pokemon)
 
   return pokemon
 
+def _add_calculated_iv_pct(pokemon):
+  pokemon['IV %'] = ((pokemon.get('individual_attack', 0) + pokemon.get('individual_stamina', 0) + pokemon.get(
+    'individual_defense', 0) + 0.0) / 45.0) * 100.0
 
 def _add_species_data(pokemon):
   pokemon.update(_filter_by_field(species_data, '#', pokemon['pokemon_id']))
@@ -52,7 +56,7 @@ def _add_charged_attack_data(pokemon):
 
 
 def _add_battle_ranks_data(pokemon):
-  pokemon.update(_filter_by_2_fields(battle_ranks, "Basic Atk", pokemon["Basic Name"], "Charge Atk", pokemon["Charged Name"]))
+  pokemon.update(_filter_by_3_fields(battle_ranks, "Name", pokemon['Name'], "Basic Atk", pokemon["Basic Name"], "Charge Atk", pokemon["Charged Name"]))
   return pokemon
 
 
@@ -65,24 +69,32 @@ def _filter_by_field(collection, field_name, value):
   else: return {}
 
 
-def _filter_by_2_fields(collection, field1_name, value1, field2_name, value2):
-  """ searches collection for dictionary with field1_name key equal to value1 and field2_name key equal to value2
+def _filter_by_3_fields(collection, field1_name, value1, field2_name, value2, field3_name, value3):
+  """ searches collection for dictionary with field1_name key equal to value1 and field2_name key equal to value2, etc
   returns an empty dictionary if no results found """
-  results = filter(lambda x: x.get(field1_name, None) == value1 and x.get(field2_name, None) == value2, collection)
+  results = filter(lambda x: x.get(field1_name, None) == value1 and x.get(field2_name, None) == value2 and x.get(field3_name, None) == value3, collection)
   if (len(results) > 0):
     return results[0]
   else: return {}
 
 
+class Error(Exception):
+  pass
+
+class LoginError(Error):
+  def __init__(self, message):
+    self.message = message
+
 class PokemonService:
   def __init__(self, auth_service, username, password, lat, lon):
     self.api = PGoApi()
-    self.login(auth_service, username, password, lat, lon)
+    if not self.login(auth_service, username, password, lat, lon):
+      raise LoginError('Login Failed')
 
 
   def login(self, auth_service, username, password, lat, lon):
     self.api.set_position(lat, lon, 0)
-    self.api.login(auth_service, username, password)
+    return self.api.login(auth_service, username, password)
 
 
   def get_player(self):
@@ -99,6 +111,65 @@ class PokemonService:
     pokemons = [x['pokemon_data'] for x in self.get_inventory() if 'pokemon_data' in x and 'is_egg' not in x['pokemon_data']]
     _add_pokemon_lookup_data(pokemons)
     return pokemons
+
+  def get_pokemon_keys(self):
+    return [
+    #'#',
+    'Name',
+    'nickname',
+    'IV %',
+    'cp',
+    'Duel Ability',
+    'Gym Offense',
+    'Gym Defense',
+    'Tankiness',
+    'Basic Atk',
+    'Charge Atk',
+    'Offense Rank',
+    'Defense Rank',
+    '%ile',
+    'Basic DPS',
+    'Basic Type',
+    'Basic PW',
+    'Basic Duration (ms)',
+    'Charged Type',
+    'Charged PW',
+    'Charged Duration (ms)',
+    'Charged NRG Cost',
+    'Charged Crit%',
+    #'Basic ID',
+    'individual_attack','individual_defense','individual_stamina',
+    'Basic NRG',
+    'Basic NRGPS',
+    #'Basic Name',
+    #'Charged Dodge Window (ms)',
+    #'Charged HealScalar',
+    #'Charged ID',
+    #'Charged Name',
+    #'Charged StaminaLossScalar',
+    'Attack Ratio',
+    'Defense Ratio',
+    #'Gym Weave Damage/100s',
+    'Max CP Cap',
+    'Min CP Cap',
+    'No Weave Dmg/100s',
+    #'PKMN #',
+    #'Weave Damage/100s',
+    #'captured_cell_id',
+    'cp_multiplier',
+    #'from_fort': 1,
+    #'id',
+    #'move_1',
+    #'move_2',
+    'pokemon_id',
+    'stamina',
+    'stamina_max',
+    'HP Ratio',
+    'height_m',
+    'weight_kg',
+    'pokeball',
+    'creation_time_ms'
+    ];
 
 
   def get_candy(self):
