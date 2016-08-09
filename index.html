@@ -1,0 +1,15 @@
+<html ng-app="ivfetchApp">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
+  <script src="app.js"></script>
+</head>
+<body ng-controller="PokemonController">
+
+  <ul>
+    <li ng-repeat="pokemon in pokemons">
+      <span>{{pokemon.pokemon_id}}</span>
+      <p>{{pokemon.name}}</p>
+    </li>
+  </ul>
+</body>
+</html>

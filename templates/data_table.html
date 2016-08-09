@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block body %}
+  <div class="table-responsive">
+    <table id="iv-table" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          {% for key in keys %}
+          <th>{{ key }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          {% for key in keys %}
+          <th>{{ key }}</th>
+          {% endfor %}
+        </tr>
+      </tfoot>
+      <tbody>
+        {% for row in data %}
+        <tr>
+          {% for key in keys %}
+          <td>{{ row[key] }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <script type="text/javascript">
+  $(document).ready(function() {
+    $('#iv-table').DataTable();
+  });
+  </script>
+{% endblock %}
